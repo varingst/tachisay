@@ -1,10 +1,19 @@
 #!/usr/bin/env bash
 
+if [[ -z "$TACHISAY_FOOTER" ]]; then
+  TACHISAY_FOOTER="[1;35;40m Gentoo GNU/Linux\n[1;32;40m \\\r\n[0;37;40m"
+fi
+
 declare -ag opts
 for opt in fortune header footer; do
   var="TACHISAY_${opt^^}"
-  [[ -n "${!var}" ]] && opts+=( --${1=>}="${!var}" )
+  [[ -n "${!var}" ]] && opts+=( --${opt,,}="${!var}" )
 done
 [[ -n "$TACHISAY" ]] && opts+=( "$TACHISAY" )
 
-tachisay "${opts[@]}" >/etc/issue || cp /etc/issue.logo /etc/issue
+if [[ "$1" == test ]]; then
+  echo "${opts[@]}"
+  tachisay "${opts[@]}"
+else
+  tachisay "${opts[@]}" >/etc/issue || cp /etc/issue.logo /etc/issue
+fi
