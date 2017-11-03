@@ -1,0 +1,76 @@
+#!/usr/bin/awk -f
+
+function pad_to(pad_width, str) { # {{{1
+  # pad string with spaces
+  for (i = length(str); i < pad_width; i++) {
+    str = str " "
+  }
+  return str
+}
+
+function line(line_width) { # {{{1
+  # print a line of dashes
+  dashl=""
+  i = 0
+  while (i++ < line_width) {
+    dashl = dashl "-"
+  }
+  return dashl
+}
+
+function pf(fmt, text) { # {{{1
+  printf("[0;37;40m" fmt, text)
+}
+function print_bubble(ln) {
+  # top line
+  if (ln == 0) {
+    pf("+%s+\n", line(maxwidth + 2))
+  # bottom line
+  } else if (ln == lnum + 1) {
+    pf("+-+ +%s+\n", line(maxwidth - 2))
+  # side wall
+  } else if (ln == lnum + 2) {
+    pf("  |/\n", "")
+  # walls and text
+  } else {
+    pf("| %s |\n", pad_to(maxwidth, lines[ln]))
+  }
+
+}
+
+BEGIN { # {{{1
+  width = 40
+  x_min = 70
+  y_max = 14
+  maxwidth = 0
+  lnum = 1
+}
+
+FNR == NR { # While reading first file {{{1
+  split($0, words)
+  w = 1
+  len = length(lines[lnum])
+  while (w <= length(words)) {
+    if (len == 0) {
+      lines[lnum] = words[w++]
+    } else if (len + length(words[w]) + 1 > width) {
+      lnum++
+    } else {
+      lines[lnum] = lines[lnum] " " words[w++]
+    }
+    len = length(lines[lnum])
+    if (len > maxwidth) {
+      maxwidth = len
+    }
+  }
+}
+
+NR > FNR { # While reading second file {{{1
+  if (FNR <= (y_max+1) && FNR >= (y_max - (lnum + 1))) {
+    pf("%s", pad_to(x_min, $0))
+    print_bubble(l)
+    l++
+  } else {
+    print
+  }
+}

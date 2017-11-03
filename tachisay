@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+print_help() { cat <<EOS
+Usage: ${0##*/} [OPTION] TEXT
+Have tachikoma say TEXT
+
+Options:
+  --fortune=OPTS             Have tachi say wisdom from fortune
+  --ascii=FILE               Use ascii file other than tachi.ascii
+  --header=FILE              File to insert before ascii
+  --footer=FILE              File to add after ascii
+
+  --help                     Print this page
+EOS
+}
+
+main() {
+  unset fortune
+  unset ascii
+  unset header
+  unset footer
+
+  cd $(dirname $(realpath $0))
+
+  while (( $# )); do
+    case "$1" in
+      --fortune=*)
+        read -ra fortune <<<"${1#*=}"
+      ;;
+      --ascii=*)
+        ascii="${1#*=}"
+        assert_file "$ascii"
+      ;;
+      --header=*)
+        header="${1#*=}"
+        assert_file "$header"
+      ;;
+      --footer=*)
+        footer="${1#*=}"
+        assert_file "$footer"
+      ;;
+      --help)
+        print_help
+        exit
+      ;;
+      --) shift; break;;
+      -*) bail "Invalid option: $1";;
+      *) break;;
+    esac
+    shift
+  done
+
+  assert_file "${ascii:=tachi.ascii}"
+
+  asciisay="asciisay"
+  if ! command -v "$asciisay" >/dev/null 2>&1; then
+    asciisay="./asciisay"
+    [[ -x "$asciisay" ]] || bail "asciisay not found"
+  fi
+
+  text=$(
+    [[ -n "$header" ]] && cat "$header"
+    if [[ -z "$fortune" ]]; then
+      echo "$*"
+    else
+      fortune "${fortune[@]}"
+    fi
+    [[ -n "$footer" ]] && cat "$footer"
+  )
+
+  $asciisay <(echo "$text") "$ascii"
+}
+
+assert_file() {
+  [[ -s "$1" ]] || bail "${2:-"$1 is not a file or is empty"}"
+}
+
+bail() { # {{{1
+  printf "%s\n" >&2
+  exit 1
+}
+
+main "$@" # {{{1

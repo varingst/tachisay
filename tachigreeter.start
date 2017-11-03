@@ -1,0 +1,4 @@
+#!/bin/bash
+
+/root/tachisay <(fortune -s computers zx-error art tao taow || echo ":(") /root/tachi.ascii > /etc/issue
+(( $? == 0 )) || cp /etc/issue.logo /etc/issue
