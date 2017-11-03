@@ -89,7 +89,7 @@ dump() {
   if [[ -s "$1" ]]; then
     cat "$1"
   else
-    printf "%s\n" "$1"
+    echo -e "$1"
   fi
 }
 
