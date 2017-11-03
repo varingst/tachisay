@@ -1,5 +1,24 @@
 #!/usr/bin/env bash
 
+# The following variables can be exported in /etc/conf.d/local
+# to configure tachisay login:
+#
+# Text to say
+# export TACHISAY="What tachi will say"
+#
+# Options to pass to fortune
+# export TACHISAY_FORTUNE="-s computers"
+#
+# Header, text or file:
+# export TACHISAY_HEADER="My neat header text"
+#
+# Footer, text or file:
+# export TACHISAY_FOOTER="/etc/issue.nologo"
+#
+# Fallback, file to use if tachisay fails
+# export TACHISAY_FALLBACK="/etc/issue.nologo"
+
+
 if [[ -z "$TACHISAY_FOOTER" ]]; then
   TACHISAY_FOOTER="[1;35;40m Gentoo GNU/Linux\n[1;32;40m \\\r\n[0;37;40m"
 fi
@@ -12,8 +31,10 @@ done
 [[ -n "$TACHISAY" ]] && opts+=( "$TACHISAY" )
 
 if [[ "$1" == test ]]; then
+  echo "Options passed:"
   echo "${opts[@]}"
+  echo
   tachisay "${opts[@]}"
 else
-  tachisay "${opts[@]}" >/etc/issue || cp /etc/issue.logo /etc/issue
+  tachisay "${opts[@]}" >/etc/issue || cp "${TACHISAY_FALLBACK:-/etc/issue.logo}" /etc/issue
 fi
