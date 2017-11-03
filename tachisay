@@ -50,7 +50,7 @@ main() {
     shift
   done
 
-  assert_file "${ascii:=tachi.ascii}"
+  assert_file "${ascii:=/usr/share/tachisay/tachi.ascii}"
 
   asciisay="asciisay"
   if ! command -v "$asciisay" >/dev/null 2>&1; then
