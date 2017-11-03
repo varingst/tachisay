@@ -6,9 +6,10 @@ Have tachikoma say TEXT
 
 Options:
   --fortune=OPTS             Have tachi say wisdom from fortune
+                             Passing this option with ignore any TEXT given
   --ascii=FILE               Use ascii file other than tachi.ascii
-  --header=FILE              File to insert before ascii
-  --footer=FILE              File to add after ascii
+  --header=FILE or TEXT      File or text to insert before ascii
+  --footer=FILE or TEXT      File or text to add after ascii
 
   --help                     Print this page
 EOS
@@ -32,12 +33,10 @@ main() {
         assert_file "$ascii"
       ;;
       --header=*)
-        header="${1#*=}"
-        assert_file "$header"
+        header="$(file_or_text "$1")"
       ;;
       --footer=*)
-        footer="${1#*=}"
-        assert_file "$footer"
+        footer="$(file_or_text "$1")"
       ;;
       --help)
         print_help
@@ -59,20 +58,39 @@ main() {
   fi
 
   text=$(
-    [[ -n "$header" ]] && cat "$header"
     if [[ -z "$fortune" ]]; then
-      echo "$*"
+      echo "${*:-"...."}"
     else
       fortune "${fortune[@]}"
     fi
-    [[ -n "$footer" ]] && cat "$footer"
   )
 
+  dump "$header"
   $asciisay <(echo "$text") "$ascii"
+  dump "$footer"
 }
 
 assert_file() {
   [[ -s "$1" ]] || bail "${2:-"$1 is not a file or is empty"}"
+}
+
+file_or_text() {
+  in="${1#*=}"
+  if [[ -s "$in" ]]; then
+    realpath "$in"
+  else
+    echo "$in"
+  fi
+}
+
+dump() {
+  [[ -n "$1" ]] || return
+
+  if [[ -s "$1" ]]; then
+    cat "$1"
+  else
+    printf "%s\n" "$1"
+  fi
 }
 
 bail() { # {{{1
