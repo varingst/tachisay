@@ -18,10 +18,13 @@
 # Fallback, file to use if tachisay fails
 # export TACHISAY_FALLBACK="/etc/issue.nologo"
 
-
-if [[ -z "$TACHISAY_FOOTER" ]]; then
-  TACHISAY_FOOTER="[1;35;40m Gentoo GNU/Linux\n[1;32;40m \\\r\n[0;37;40m"
+test=false
+if [[ "$1" == test ]]; then
+  test=true
+  [[ -s /etc/conf.d/local ]] && . /etc/conf.d/local
 fi
+
+[[ -n "$TACHISAY_FOOTER" ]] || TACHISAY_FOOTER="[1;35;40m Gentoo GNU/Linux\n[1;32;40m \\\r\n[0;37;40m"
 
 declare -ag opts
 for opt in fortune header footer; do
@@ -30,7 +33,7 @@ for opt in fortune header footer; do
 done
 [[ -n "$TACHISAY" ]] && opts+=( "$TACHISAY" )
 
-if [[ "$1" == test ]]; then
+if $test; then
   echo "Options passed:"
   echo "${opts[@]}"
   echo
